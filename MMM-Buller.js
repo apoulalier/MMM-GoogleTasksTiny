@@ -5,7 +5,7 @@
  * MIT Licensed.
  */
 
-Module.register("MMM-Buller",{
+Module.register("MMM-Buller", {
 
   // Define module defaults
   defaults: {
@@ -17,18 +17,17 @@ Module.register("MMM-Buller",{
       metaData: false, //true: leveraging metaData from the task
       alwaysShowDueTask: true, //true: a due Task will always be shown on the mirror
     },
-    maxNumberOfTasksDisplayed: 3,
-    maxNumberOfUsualTasksDisplayed: 2,
+    maxNumberOfTasksDisplayed: 4,
     updateDomFrequence: 20 * 1000, //20 seconds
   },
 
   // Define required scripts.
-  getStyles: function() {
+  getStyles: function () {
     return ["MMM-Buller.css"]; //, "font-awesome.css" is version 4
   },
 
   // Define start sequence.
-  start: function() {
+  start: function () {
     var l, i;
     Log.info("Starting module: " + this.name);
     this.config.infos = [];
@@ -36,12 +35,12 @@ Module.register("MMM-Buller",{
       this.config.lists = [];
     }
     if (this.config.debug) {
-      console.log ('Buller - lists to be used: ');
-      console.log (JSON.stringify(this.config.lists));
+      console.log('Buller - lists to be used: ');
+      console.log(JSON.stringify(this.config.lists));
     }
     //all lists are based on the template (defined here), superseded by the default value (define in config), superseded by specific value
-    for (i=0; i < this.config.lists.length; i++) {
-      this.config.infos[i]={};
+    for (i = 0; i < this.config.lists.length; i++) {
+      this.config.infos[i] = {};
       l = Object.assign(JSON.parse(JSON.stringify(this.config.list_template)),
         JSON.parse(JSON.stringify(this.config.listDefault || {})),
         JSON.parse(JSON.stringify(this.config.lists[i])));
@@ -57,108 +56,168 @@ Module.register("MMM-Buller",{
     }, this.config.updateDomFrequence);
   },
 
-//  getHeader: function () {
-//    var header = this.data.header;
-//    return header;
-//  },
-
+  //  getHeader: function () {
+  //    var header = this.data.header;
+  //    return header;
+  //  },
   // Add Task to an element (to simplify getDom)
-  getTaskRow: function (task, list, isImportant) {
-    var firstCell, listColor, row = document.createElement("tr");
-    listColor = list.color ? 'color:' + list.color + ' !important' : false;
-    row = document.createElement("tr");
+  getTaskRow: function (task) {
+
+    var firstCell, secondCell, thirdCell, Cell4, listColor, row = document.createElement("tr");
+
+    listColor = task.color ? 'color:' + task.color + ' !important' : false;
+
     firstCell = document.createElement("td");
-    firstCell.className = "align-right bright";
+    firstCell.className = "align-left bright";
     firstCell.innerHTML = '';
-    if (list.icon) {
-      firstCell.innerHTML += '<i class="' + list.icon + '"></i>&nbsp';
-    }
-    firstCell.innerHTML += task.title;
-    if (isImportant) {
-      firstCell.innerHTML += '&nbsp<i class="fa fa-exclamation' + '"></i>';
-    }
+
+    secondCell = document.createElement("td");
+    secondCell.className = "align-left";
+    secondCell.innerHTML = '';
+
+    thirdCell = document.createElement("td");
+    thirdCell.className = "align-right";
+    thirdCell.innerHTML = '';
+
+    Cell4 = document.createElement("td");
+    Cell4.className = "align-right";
+    Cell4.innerHTML = '';
+
+    if (task.icon) firstCell.innerHTML += '<i class="' + task.icon + '"></i>&nbsp';
+
+    // Vérifiez si task.title, task.notes et task.due sont définis
+    var taskTitle = task.title ? task.title : 'No Title';
+    var taskNotes = task.notes ? task.notes : '';
+    var taskDue = task.due ? new Date(task.due).toLocaleDateString() : '';
+
+    firstCell.innerHTML += taskTitle;
+
+    secondCell.innerHTML += taskNotes;
+    thirdCell.innerHTML += taskDue;
+
     if (listColor) {
-        firstCell.setAttribute('style', listColor);
+      firstCell.setAttribute('style', listColor);
+      secondCell.setAttribute('style', listColor);
+      thirdCell.setAttribute('style', listColor);
+      Cell4.setAttribute('style', listColor);
     }
+
+    if (task.late) {
+      Cell4.innerHTML += '&nbsp<i class="fas fa-exclamation"></i>';
+      thirdCell.className = "align-right bright";
+      thirdCell.setAttribute('style', 'color:red');
+      Cell4.setAttribute('style', 'color:red');
+    }
+
     row.appendChild(firstCell);
+    row.appendChild(secondCell);
+    row.appendChild(thirdCell);
+    row.appendChild(Cell4);
     return row;
   },
 
-  // Override dom generator.
-  getDom: function() {
+  getTaskRow: function (task) {
+  const row = document.createElement("tr");
+
+  const taskTitle = task.title ? task.title.substring(0, 30) : 'No Title';
+  const taskNotes = task.notes ? task.notes.substring(0, 30) : '';
+  const taskDue = task.due ? new Date(task.due).toLocaleDateString() : '';
+  const listColor = task.color ? `color:${task.color} !important` : null;
+
+  // Cellules
+  const firstCell = document.createElement("td");
+  const secondCell = document.createElement("td");
+  const thirdCell = document.createElement("td");
+  const cell4 = document.createElement("td");
+
+  // Classes
+  firstCell.className = "align-left bright";
+  secondCell.className = "align-left";
+  thirdCell.className = "align-right";
+  cell4.className = "align-right";
+
+  // Contenu
+  if (task.icon) {
+    firstCell.innerHTML += `<i class="${task.icon}"></i>&nbsp;`;
+  }
+  firstCell.innerHTML += taskTitle;
+  secondCell.innerHTML = taskNotes;
+  thirdCell.innerHTML = taskDue;
+
+  // Couleur (si définie)
+  [firstCell, secondCell, thirdCell, cell4].forEach(cell => {
+    if (listColor) cell.setAttribute("style", listColor);
+  });
+
+  // Retard
+  if (task.late) {
+    cell4.innerHTML = `&nbsp;<i class="fas fa-exclamation"></i>`;
+    thirdCell.classList.add("bright");
+    [thirdCell, cell4].forEach(cell => {cell.setAttribute("style", "color:red");});
+  }  
+
+  // Ajout au tableau
+  row.appendChild(firstCell);
+  row.appendChild(secondCell);
+  row.appendChild(thirdCell);
+  row.appendChild(cell4);
+
+  return row;
+},
+
+  getDom: function () {
     if (this.config.debug) {
-      console.log ('Buller DOM refresh');
+      console.log('Buller DOM refresh');
     }
-    var now = new Date();
-    var wrapper = document.createElement("div");
-    var lists = this.config.lists;
-    var tasks, tasksLeft, i, j, t, n;
-    var table = document.createElement("table");
-    var firstCell, secondCell, row;
-    var nbOfTasksDisplayed = 0;
-    if (lists.length > 0) {
-      if (!this.loaded) {
-        wrapper.innerHTML = "Loading information ...";
-        wrapper.className = "dimmed light small";
-        return wrapper;
-      } else {
-        wrapper.className = "buller";
-        wrapper.appendChild(table);
-        table.className = "small";
-        tasksLeft = [];
-        for (i = 0; i < lists.length; i++) {
-          l = lists[i];
-          tasks = this.infos[i];
-          for (j = 0; j < tasks.length; j++) {
-            t = tasks[j];
-            if (Date.parse(t.due) < new Date && nbOfTasksDisplayed < this.config.maxNumberOfTasksDisplayed) {
-              nbOfTasksDisplayed++;
-              table.appendChild(this.getTaskRow(t, l, true));
-            } else {
-              tasksLeft.push([t, l]);
-            }
-          }
-        }
-        while (tasksLeft.length > 0 && nbOfTasksDisplayed < this.config.maxNumberOfUsualTasksDisplayed && nbOfTasksDisplayed < this.config.maxNumberOfTasksDisplayed) {
-          n = Math.floor(Math.random() * Math.floor(tasksLeft.length));
-          t = tasksLeft.splice(n , 1)[0];
-          table.appendChild(this.getTaskRow(t[0], t[1], false));
-          nbOfTasksDisplayed++;
-        }
-      }
-    } else {
+
+    const wrapper = document.createElement("div");
+    const table = document.createElement("table");
+    wrapper.className = "buller";
+    table.className = "small";
+    wrapper.appendChild(table);
+
+    const lists = this.config.lists;
+    const now = new Date();
+
+    if (lists.length === 0) {
       wrapper.className = "small";
       wrapper.innerHTML = "Your configuration requires a 'lists' element.<br />Check github da4throux/MMM-Buller<br />for more information";
+      return wrapper;
     }
-/*
-      for (i = 0; i < lists.length; i++) {
-      l = lists[i]; // list config
-      d = this.infos[i]; // data received for the list
-      listColor = l.listColor ? 'color:' + l.listColor + ' !important' : false;
-      switch (l.type) {
-        case "gTasks":
-          row = document.createElement("tr");
-          row.id = 'list-' + i;
-          firstCell = document.createElement("td");
-          firstCell.className = "align-right bright";
-          firstCell.innerHTML = l.label || l.name;
-          if (listColor) {
-              firstCell.setAttribute('style', listColor);
-          }
-          if (l.firstCellColor) {
-              firstCell.setAttribute('style', 'color:' + l.firstCellColor + ' !important');
-          }
-          row.appendChild(firstCell);
-          table.appendChild(row);
-          break;
-        default:
-          if (this.config.debug) { console.log('Unknown list type: ' + l.type)}
+
+    if (!this.loaded) {
+      wrapper.innerHTML = "Loading information ...";
+      wrapper.className = "dimmed light small";
+      return wrapper;
+    }
+
+    const todayISO = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
+    const allTasks = lists.flatMap((list, i) => {
+      const tasks = this.infos[i] || [];
+      return tasks.map(task => ({
+        ...task,             // déstructure les props de task directement
+        orderTaskDue: task.due || todayISO, // date du jour par défaut si undefined
+        icon: list.icon,
+        late: Date.parse(task.due) < now ? true : false,
+        color: list.color,
+      }));
+    });
+
+    // Étape 2 : Trier toutes les tâches par date d'échéance
+    allTasks.sort((a, b) => new Date(a.orderTaskDue) - new Date(b.orderTaskDue));
+
+    // Étape 3 : Afficher les tâches
+    let nbOfTasksDisplayed = 0;
+    allTasks.forEach(task => {
+      if (nbOfTasksDisplayed < this.config.maxNumberOfTasksDisplayed) {
+        table.appendChild(this.getTaskRow(task));
+        nbOfTasksDisplayed++;
       }
-    } */
+    });
     return wrapper;
   },
 
-  socketNotificationReceived: function(notification, payload) {
+  socketNotificationReceived: function (notification, payload) {
     var now = new Date();
     this.caller = notification;
     switch (notification) {
@@ -167,9 +226,9 @@ Module.register("MMM-Buller",{
         if (!this.loaded) {
           this.loaded = true;
         }
-          this.updateDom();
+        this.updateDom();
         if (this.config.debug) {
-          console.log (this.infos);
+          console.log(this.infos);
         }
         break;
     }
