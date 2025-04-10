@@ -161,7 +161,7 @@ module.exports = NodeHelper.create({
         console.log ( payload );
       }
       //G Load client secrets from a local file.
-      this.CREDENTIALS_PATH = this.path + '../../config/GoogleToken/token.json';
+      this.CREDENTIALS_PATH = this.path + '../../config/GoogleToken/credentials.json';
       fs.readFile(this.CREDENTIALS_PATH, (err, content) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Tasks API.
