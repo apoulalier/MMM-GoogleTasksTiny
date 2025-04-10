@@ -5,7 +5,7 @@
  * MIT Licensed.
  */
 
-Module.register("MMM-Buller", {
+Module.register("MMM-GoogleTasksTiny", {
 
   // Define module defaults
   defaults: {
@@ -23,7 +23,7 @@ Module.register("MMM-Buller", {
 
   // Define required scripts.
   getStyles: function () {
-    return ["MMM-Buller.css"]; //, "font-awesome.css" is version 4
+    return ["MMM-GoogleTasksTiny.css"]; //, "font-awesome.css" is version 4
   },
 
   // Define start sequence.
@@ -35,7 +35,7 @@ Module.register("MMM-Buller", {
       this.config.lists = [];
     }
     if (this.config.debug) {
-      console.log('Buller - lists to be used: ');
+      console.log('GoogleTasksTiny - lists to be used: ');
       console.log(JSON.stringify(this.config.lists));
     }
     //all lists are based on the template (defined here), superseded by the default value (define in config), superseded by specific value

@@ -28,7 +28,7 @@ module.exports = NodeHelper.create({
     this.googleAuthReady = false;
     this.started = false;
     //this.path = 'modules/MMM-Buller/'; //already defined in MM modules
-    this.TOKEN_PATH = this.path + '/token.json';
+    this.TOKEN_PATH = this.path + '../../config/GoogleToken/token.json';
   },
 
   /**
