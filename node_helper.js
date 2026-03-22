@@ -126,6 +126,8 @@ module.exports = NodeHelper.create({
     self.gTasksAPI.tasks.list({
       tasklist: self.gTasks[listDescription.name],
       maxResults: 10,
+      showCompleted: false,  // ← exclut les tâches terminées
+      showHidden: false,     // ← exclut les tâches masquées (complétées puis cachées)
     })
       .then(res => {
         const tasks = res.data.items;
